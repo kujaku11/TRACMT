@@ -15,7 +15,7 @@ We developed the RRMS estimator by applying the robust multivariate linear regre
 The RRMS estimator can give an unbiased estimate of the MT transfer function and suppress the influence of outliers in the electric field and magnetic
 field.
 
-The website of TRACMT: [https://sites.google.com/view/yoshiyausui/femtic](https://sites.google.com/view/yoshiyausui/tracmt)
+The website of TRACMT: [https://sites.google.com/view/yoshiyausui/tracmt](https://sites.google.com/view/yoshiyausui/tracmt)
 
 ## Functional Overview
 **Input file format**: Text (Ascii) file / ats files of Metronix instruments / MTH5 files (Peacock et al., 2022) / dat files of ELOG-MT, ELOG-DUAL, and ELOG1K
