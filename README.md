@@ -12,7 +12,7 @@ _Yoshiya Usui, 2024. Prewhitening of magnetotelluric data using a robust filter 
 _Yoshiya Usui, Makoto Uyeshima, Shin'ya Sakanaka, Tasuku Hashimoto, Masahiro Ichiki, Toshiki Kaida, Yusuke Yamaya, Yasuo Ogawa, Masataka Masuda, Takahiro Akiyama, 2025, Application of the fast and robust bootstrap method to the uncertainty analysis of the magnetotelluric transfer function, Geophysical Journal International, 242(1), [https://doi.org/10.1093/gji/ggaf162](https://doi.org/10.1093/gji/ggaf162)_
 
 We developed the RRMS estimator by applying the robust multivariate linear regression S-estimator to the two-input-multiple-output relationship between the local EM field and the reference magnetic field that leads to the same equation as by the original remote reference method.
-The RRMS estimator can give an unbiased estimate of the MT transfer function and suppress the influence of outliers in the electric field and magnetic
+The RRMS estimator can suppress the influence of outliers in the electric field and magnetic
 field.
 
 The website of TRACMT: [https://sites.google.com/view/yoshiyausui/tracmt](https://sites.google.com/view/yoshiyausui/tracmt)
