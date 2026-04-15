@@ -79,8 +79,10 @@ jobs:
         shell: msys2 {0}
         working-directory: src
         run: |
-          C:\msys64\usr\bin\bash.exe -lc 'make -f Makefile_C++11_MTH5_CI EXT=".exe" PLATFORM_DEF="-D_WINDOWS" BLAS_LAPACK_LIBS="-lopenblas"'
-
+          make -f Makefile_C++11_MTH5_CI \
+            EXT=".exe" \
+            PLATFORM_DEF="-D_WINDOWS" \
+            BLAS_LAPACK_LIBS="-lopenblas"
       # -----------------------------------------------------------------------
       # Rename binary to include OS/arch and upload as artifact
       # -----------------------------------------------------------------------
