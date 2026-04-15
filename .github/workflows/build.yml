@@ -79,9 +79,9 @@ jobs:
         working-directory: src
         shell: msys2 {0}
         run: |
-          which make
-          make --version
-          make -f Makefile_C++11_MTH5_CI \
+            which mingw32-make
+            mingw32-make --version
+            mingw32-make -f Makefile_C++11_MTH5_CI \
             EXT=".exe" \
             PLATFORM_DEF="-D_WINDOWS" \
             BLAS_LAPACK_LIBS="-lopenblas"

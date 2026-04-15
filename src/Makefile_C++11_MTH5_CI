@@ -7,7 +7,7 @@
 #   make -f Makefile_C++11_MTH5_CI
 #
 # Usage (Windows, MSYS2/MinGW-w64):
-#   make -f Makefile_C++11_MTH5_CI BLAS_LAPACK_LIBS="-lopenblas" EXT=".exe"
+#   mingw32-make -f Makefile_C++11_MTH5_CI BLAS_LAPACK_LIBS="-lopenblas" EXT=".exe"
 #
 # Override any variable on the command line or via environment, e.g.:
 #   CXX=clang++ make -f Makefile_C++11_MTH5_CI

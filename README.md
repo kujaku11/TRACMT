@@ -66,7 +66,7 @@ pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-make \
 
 # Build (from the src/ directory)
 cd src
-make -f Makefile_C++11_MTH5_CI EXT=".exe" PLATFORM_DEF="-D_WINDOWS" BLAS_LAPACK_LIBS="-lopenblas"
+mingw32-make -f Makefile_C++11_MTH5_CI EXT=".exe" PLATFORM_DEF="-D_WINDOWS" BLAS_LAPACK_LIBS="-lopenblas"
 ```
 
 ### CI builds
