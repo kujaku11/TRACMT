@@ -1,0 +1,106 @@
+# Makefile_C++11_MTH5_CI
+#
+# CI-friendly Makefile: builds TRACMT with MTH5 (HDF5) support using
+# g++ / clang++ and system-provided LAPACK/BLAS/HDF5.
+#
+# Usage (Linux):
+#   make -f Makefile_C++11_MTH5_CI
+#
+# Usage (Windows, MSYS2/MinGW-w64):
+#   make -f Makefile_C++11_MTH5_CI BLAS_LAPACK_LIBS="-lopenblas" EXT=".exe"
+#
+# Override any variable on the command line or via environment, e.g.:
+#   CXX=clang++ make -f Makefile_C++11_MTH5_CI
+#   make -f Makefile_C++11_MTH5_CI HDF5_CFLAGS="-I/opt/hdf5/include" HDF5_LIBS="-L/opt/hdf5/lib -lhdf5"
+#
+# The original icpc-based Makefiles (Makefile_C++11, Makefile_C++11_MTH5)
+# are unchanged and continue to work as documented in README.md.
+
+# ---------------------------------------------------------------------------
+# Compiler (override with CXX=... on the command line or in the environment)
+# ---------------------------------------------------------------------------
+CXX  ?= g++
+CC   ?= g++
+
+# ---------------------------------------------------------------------------
+# Platform-specific defaults
+# ---------------------------------------------------------------------------
+# Binary extension: empty on Linux/macOS, ".exe" on Windows
+EXT  ?=
+
+# Platform define: -D_LINUX on Linux/macOS; use -D_WINDOWS on Windows
+PLATFORM_DEF ?= -D_LINUX
+
+# BLAS/LAPACK libraries: system LAPACK on Linux; override for MSYS2/OpenBLAS
+BLAS_LAPACK_LIBS ?= -llapack -lblas -lgfortran
+
+# HDF5: detected via pkg-config if available, otherwise fall back to -lhdf5
+HDF5_CFLAGS ?= $(shell pkg-config --cflags hdf5 2>/dev/null)
+HDF5_LIBS   ?= $(shell pkg-config --libs   hdf5 2>/dev/null || echo "-lhdf5")
+
+# ---------------------------------------------------------------------------
+# Compiler flags
+# ---------------------------------------------------------------------------
+CXXFLAGS  = -O3 \
+            -fopenmp \
+            -std=c++11 \
+            -DNDEBUG \
+            -D_USE_OMP \
+            $(PLATFORM_DEF) \
+            -D_MTH5 \
+            -I./ci-include \
+            $(HDF5_CFLAGS)
+
+LDFLAGS   = -fopenmp
+
+LIBS      = $(BLAS_LAPACK_LIBS) $(HDF5_LIBS)
+
+# ---------------------------------------------------------------------------
+# Sources and target
+# ---------------------------------------------------------------------------
+OBJS      = Analysis.cpp \
+            AnalysisMultivariateRegression.cpp \
+            AnalysisTwoStage.cpp \
+            AnalysisOrdinaryRemoteReference.cpp \
+            AnalysisTest.cpp \
+            AnalysisRepeatedMedian.cpp \
+            Ats.cpp \
+            CalibrationFunction.cpp \
+            Control.cpp \
+            DoubleDenseMatrix.cpp \
+            DoubleDenseSquareMatrix.cpp \
+            DoubleDenseSquareSymmetricMatrix.cpp \
+            DoubleDenseSquareSymmetricPositiveDefiniteMatrix.cpp \
+            ElogDual.cpp \
+            ElogMT.cpp \
+            LapackInterface.cpp \
+            OutputFiles.cpp \
+            RobustPrewhitening.cpp \
+            RobustWeight.cpp \
+            RobustWeightHuber.cpp \
+            RobustWeightThomson.cpp \
+            RobustWeightTukeysBiweights.cpp \
+            Util.cpp \
+            UtilRobust.cpp \
+            MTH5.cpp \
+            MTH5ChannelResponse.cpp \
+            MTH5CoefficientFilter.cpp \
+            MTH5FIRFilter.cpp \
+            MTH5Filter.cpp \
+            MTH5FrequencyResponseTableFilter.cpp \
+            MTH5TimeDelayFilter.cpp \
+            MTH5ZeroPoleGainFilter.cpp \
+            main.cpp
+
+PROGRAM   = TRACMT$(EXT)
+
+# ---------------------------------------------------------------------------
+# Build rules
+# ---------------------------------------------------------------------------
+all: $(PROGRAM)
+
+$(PROGRAM): $(OBJS)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(LIBS) -o $(PROGRAM)
+
+clean:
+	rm -f *.o *~ $(PROGRAM)

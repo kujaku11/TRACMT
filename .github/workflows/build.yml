@@ -1,0 +1,102 @@
+name: Build TRACMT
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            artifact_name: TRACMT-linux-x86_64
+            binary: TRACMT
+
+          - os: windows-latest
+            artifact_name: TRACMT-windows-x86_64.exe
+            binary: TRACMT.exe
+
+    steps:
+      # -----------------------------------------------------------------------
+      # Checkout
+      # -----------------------------------------------------------------------
+      - uses: actions/checkout@v4
+
+      # -----------------------------------------------------------------------
+      # Linux: install compiler + LAPACK/BLAS + HDF5 via apt
+      # -----------------------------------------------------------------------
+      - name: Install dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            g++ \
+            make \
+            liblapack-dev \
+            libblas-dev \
+            libgfortran5 \
+            gfortran \
+            libhdf5-dev \
+            pkg-config
+
+      # -----------------------------------------------------------------------
+      # Windows: install compiler + LAPACK/BLAS + HDF5 via MSYS2/MinGW-w64
+      # -----------------------------------------------------------------------
+      - name: Set up MSYS2 (Windows)
+        if: runner.os == 'Windows'
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            mingw-w64-x86_64-gcc
+            mingw-w64-x86_64-make
+            mingw-w64-x86_64-openblas
+            mingw-w64-x86_64-lapack
+            mingw-w64-x86_64-hdf5
+            mingw-w64-x86_64-pkg-config
+
+      # -----------------------------------------------------------------------
+      # Build on Linux
+      # -----------------------------------------------------------------------
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        working-directory: src
+        run: make -f Makefile_C++11_MTH5_CI
+
+      # -----------------------------------------------------------------------
+      # Build on Windows (inside MSYS2 MinGW64 shell)
+      # -----------------------------------------------------------------------
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        working-directory: src
+        run: |
+          make -f Makefile_C++11_MTH5_CI \
+            EXT=".exe" \
+            PLATFORM_DEF="-D_WINDOWS" \
+            BLAS_LAPACK_LIBS="-lopenblas"
+
+      # -----------------------------------------------------------------------
+      # Rename binary to include OS/arch and upload as artifact
+      # -----------------------------------------------------------------------
+      - name: Rename binary (Linux)
+        if: runner.os == 'Linux'
+        run: mv src/TRACMT src/${{ matrix.artifact_name }}
+
+      - name: Rename binary (Windows)
+        if: runner.os == 'Windows'
+        shell: msys2 {0}
+        run: mv src/TRACMT.exe src/${{ matrix.artifact_name }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact_name }}
+          path: src/${{ matrix.artifact_name }}
+          if-no-files-found: error
