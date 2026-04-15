@@ -111,6 +111,12 @@ void Analysis::run( std::vector<CommonParameters::DataFileSet>& dataFileSets ){
 	// Apply decimation
 	decimation(dataFileSets);
 
+#ifdef _MTH5
+	if (ptrControl->doesReadMTH5() && ptrControl->doesReadMTH5Filters()) {
+		(MTH5::getInstance())->readFiltersAll(ptrControl->getNumberOfChannels(), dataFileSets);
+	}
+#endif
+
 	// Read calibration files for main analysis
 	readCalibrationFiles(freqAll);
 
@@ -306,8 +312,7 @@ void Analysis::run( std::vector<CommonParameters::DataFileSet>& dataFileSets ){
 				outputFrequencyDomainData( iSegLen, freqDegree, numOfRemainingSegments, ftval );
 			}
 			// Calculate response functions
-			calculateResponseFunctions( iSegLen, freqDegree, timeLength, freq, numOfRemainingSegments, ftval, times, ofsResp, ofsRhoaPhs );
-
+			calculateResponseFunctions(iSegLen, freqDegree, timeLength, freq, numOfRemainingSegments, ftval, times, ofsResp, ofsRhoaPhs);
 			// Delete arrays
 			for( int iChan = 0; iChan < numChannels; ++iChan ){
 				delete [] ftvalOrg[iChan];
@@ -878,7 +883,7 @@ void Analysis::readTimeSeriesData( std::vector<CommonParameters::DataFileSet>& d
 				ptrAts->readAtsFile(fileName, numSkipData, numDataPoints, dataFileList[iChan].data);
 			}
 #ifdef _MTH5
-			else if (ptrControl->doesReadMTH5() && Util::extractExtensionOfFileName(fileName).find("mth5") != std::string::npos) {
+			else if (ptrControl->doesReadMTH5()){
 				MTH5* ptrMTH5 = MTH5::getInstance();
 				ptrMTH5->readMTH5File(fileName, dataFileList[iChan].mth5GroupName, numSkipData, numDataPoints, dataFileList[iChan].data);
 			}
@@ -1163,19 +1168,9 @@ void Analysis::convertToFrequencyData( const int segmentLength, const std::vecto
 				}else{
 					memcpy(dataSegments[iChan][counterSegment], &(itr->dataFile[iChan].data[index]), sizeof(double)*segmentLength);
 				}
-//#ifdef _DEBUG_WRITE
-//				std::ostringstream oss;
-//				oss << "sect_" << section << "_seg_" << counterSegment << "_chan_" << iChan << ".csv"; 
-//				std::ofstream ofs;
-//				ofs.open( oss.str().c_str(), std::ios::out );
-//				if( ofs.fail() ){
-//					ptrOutputFiles->writeLogMessage("File open error !! : " + oss.str());
-//				}
-//				for( int i = 0; i < segmentLength; ++i ){
-//					ofs << std::setprecision(12) << std::scientific << dataSegments[iChan][counterSegment][i] << std::endl;
-//				}
-//				ofs.close();
-//#endif
+#ifdef _MTH5
+				m_segmentIndexToSectionIndex.insert(std::make_pair(counterSegment, section));
+#endif
 			}
 			// Start time
 			const int index1 = iSeg * shiftLength;
@@ -1204,19 +1199,6 @@ void Analysis::convertToFrequencyData( const int segmentLength, const std::vecto
 	for( int iChan = 0; iChan < numChannels; ++iChan ){
 		for( int iSeg = 0; iSeg < numSegmentsTotal; ++iSeg ){
 			Util::hanningWindow(segmentLength, dataSegments[iChan][iSeg]);
-//#ifdef _DEBUG_WRITE
-//			std::ostringstream oss;
-//			oss << "seg_" << iSeg << "_chan_" << iChan << "_hanning.csv"; 
-//			std::ofstream ofs;
-//			ofs.open( oss.str().c_str(), std::ios::out );
-//			if( ofs.fail() ){
-//				ptrOutputFiles->writeLogMessage("File open error !! : " + oss.str());
-//			}
-//			for( int i = 0; i < segmentLength; ++i ){
-//				ofs << std::setprecision(12) << std::scientific << dataSegments[iChan][iSeg][i] << std::endl;
-//			}
-//			ofs.close();
-//#endif
 		}
 	}
 
@@ -1348,6 +1330,21 @@ void Analysis::calibrationCorrection(const int iChan, const int numSegmentsTotal
 	for( int iSeg = 0; iSeg < numSegmentsTotal; ++iSeg ){
 		ftval[iSeg] *= calCorrFunc;
 	}
+
+#ifdef _MTH5
+	if (ptrControl->doesReadMTH5() && ptrControl->doesReadMTH5Filters()) {
+		OutputFiles* ptrOutputFiles = OutputFiles::getInstance();
+		const MTH5* ptrMTH5 = MTH5::getInstance();
+		for(int iSeg = 0; iSeg < numSegmentsTotal; ++iSeg) {
+			std::map<int, int>::const_iterator itrFind = m_segmentIndexToSectionIndex.find(iSeg);
+			if (itrFind == m_segmentIndexToSectionIndex.end()) {
+				ptrOutputFiles->writeErrorMessage("Segment " + Util::toString(iSeg) + " is not stored in the map");
+			}
+			const int iSection = itrFind->second;
+			ftval[iSeg] /= ptrMTH5->calcResponse(iSection, iChan, freq);
+		}
+	}
+#endif
 
 }
 
@@ -2352,6 +2349,7 @@ void Analysis::mergeSections( std::vector<CommonParameters::DataFileSet>& dataFi
 	dataFileSets.swap(dataFileSetsAfterMerge);
 
 }
+
 // Calculate rotated fields
 void Analysis::calculateRotatedFields( const int numSegmentsTotal, std::complex<double>** ftval ) const{
 

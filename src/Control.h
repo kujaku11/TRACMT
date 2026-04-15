@@ -295,6 +295,9 @@ public:
 	// Get flag specifing whether input file is MTH5 file
 	bool doesReadMTH5() const;
 
+	// Get flag specifing whether MTH5 filters are read or not
+	bool doesReadMTH5Filters() const;
+
 	// Get flag specifing whether input file is ELOG-Dual binary file
 	bool doesReadElogDualBinary() const;
 
@@ -364,8 +367,11 @@ public:
 	// Get rotation angle
 	double getRotationAngle() const;
 
-	// Get numebur of calibration files for MFS
+	// Get number of calibration files for MFS
 	int getNumCalibrationFilesForMFS() const;
+
+	// Get number of filter info (pair of file name and path) for MTH5
+	int getNumFilterInfoMTH5() const;
 
 	// Get name of calibration file for MFS
 	std::string getCalibrationFileNameForMFS(const int iFile) const;
@@ -683,6 +689,9 @@ private:
 
 	// Flag specifing whether input file is MTH5 file
 	bool m_readMTH5;
+
+	// Flag specifing whether input file is MTH5 filters
+	bool m_readMTH5Filters;
 
 	// Flag specifing whether ELOG-Dual binary is read
 	bool m_readElogDualBinary;
