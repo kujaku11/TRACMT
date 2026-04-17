@@ -7,7 +7,7 @@
 #   make -f Makefile_C++11_MTH5_CI
 #
 # Usage (Windows, MSYS2/MinGW-w64):
-#   mingw32-make -f Makefile_C++11_MTH5_CI BLAS_LAPACK_LIBS="-lopenblas" EXT=".exe"
+#   mingw32-make -f Makefile_C++11_MTH5_CI BLAS_LAPACK_LIBS="-lopenblas" EXT=".exe" STATIC_LINK=1
 #
 # Override any variable on the command line or via environment, e.g.:
 #   CXX=clang++ make -f Makefile_C++11_MTH5_CI
@@ -56,6 +56,28 @@ LDFLAGS   = -fopenmp
 LIBS      = $(BLAS_LAPACK_LIBS) $(HDF5_LIBS)
 
 # ---------------------------------------------------------------------------
+# Static linking (STATIC_LINK=1): bakes runtime libs into the executable so
+# no DLLs are needed on the target machine.  Recommended for Windows releases.
+# Uses -Wl,-Bstatic/-Wl,-Bdynamic to link third-party and GCC runtime libs
+# statically while leaving Windows system DLLs (kernel32, etc.) dynamic.
+# ---------------------------------------------------------------------------
+STATIC_LINK ?= 0
+
+ifeq ($(STATIC_LINK),1)
+  _HDF5_STATIC_LIBS := $(shell pkg-config --static --libs hdf5 2>/dev/null)
+  ifeq ($(_HDF5_STATIC_LIBS),)
+    _HDF5_STATIC_LIBS := -lhdf5 -lz
+  endif
+  # Gather all third-party static libs between Bstatic/Bdynamic guards
+  LINK_LIBS  = -Wl,-Bstatic $(BLAS_LAPACK_LIBS) $(_HDF5_STATIC_LIBS) \
+               -lgomp -lpthread -Wl,-Bdynamic
+  # Statically link the GCC/C++ runtimes (eliminates libgcc_s/libstdc++ DLLs)
+  LDFLAGS   += -static-libgcc -static-libstdc++
+else
+  LINK_LIBS  = $(LIBS)
+endif
+
+# ---------------------------------------------------------------------------
 # Sources and target
 # ---------------------------------------------------------------------------
 OBJS      = Analysis.cpp \
@@ -100,7 +122,7 @@ PROGRAM   = TRACMT$(EXT)
 all: $(PROGRAM)
 
 $(PROGRAM): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(LIBS) -o $(PROGRAM)
+	$(CXX) $(CXXFLAGS) $(OBJS) $(LDFLAGS) $(LINK_LIBS) -o $(PROGRAM)
 
 clean:
 	rm -f *.o *~ $(PROGRAM)

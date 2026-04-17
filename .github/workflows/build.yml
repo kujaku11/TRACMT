@@ -89,7 +89,8 @@ jobs:
             mingw32-make -f Makefile_C++11_MTH5_CI \
             EXT=".exe" \
             PLATFORM_DEF="-D_WINDOWS" \
-            BLAS_LAPACK_LIBS="-lopenblas"
+            BLAS_LAPACK_LIBS="-lopenblas" \
+            STATIC_LINK=1
       # -----------------------------------------------------------------------
       # Rename binary to include OS/arch and upload as artifact
       # -----------------------------------------------------------------------
@@ -103,17 +104,6 @@ jobs:
         run: |
           mkdir -p src/${{ matrix.artifact_name }}
           cp src/TRACMT.exe src/${{ matrix.artifact_name }}/TRACMT.exe
-
-          # Bundle MinGW runtime DLLs required by TRACMT.exe.
-          ldd src/TRACMT.exe \
-            | awk '/=> \/mingw64\/bin\// { print $3 } /^\/mingw64\/bin\// { print $1 }' \
-            | sort -u \
-            | while read -r dll; do
-                if [ -n "$dll" ] && [ -f "$dll" ]; then
-                  cp "$dll" src/${{ matrix.artifact_name }}/
-                fi
-              done
-
           ls -1 src/${{ matrix.artifact_name }}
 
       - name: Zip package (Windows)
