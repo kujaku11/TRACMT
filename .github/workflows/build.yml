@@ -7,6 +7,9 @@ on:
 permissions:
   contents: read
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     name: Build on ${{ matrix.os }}
@@ -117,9 +120,9 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          Compress-Archive \
-            -Path src/${{ matrix.artifact_name }}/* \
-            -DestinationPath src/${{ matrix.artifact_name }}.zip \
+          Compress-Archive `
+            -Path "src/${{ matrix.artifact_name }}" `
+            -DestinationPath "src/${{ matrix.artifact_name }}.zip" `
             -Force
 
       - name: Upload artifact
