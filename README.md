@@ -27,6 +27,8 @@ The website of TRACMT: [https://sites.google.com/view/yoshiyausui/tracmt](https:
 **Error estimation method**: Parametric approach / Bootstrap method / Jackknife method
 
 ## How to compile TRACMT
+
+### Standard build (icpc + CLAPACK)
 1) Download all source files of TRACMT to a directory.
 2) Download source files of CLAPACK (https://www.netlib.org/clapack/) to another directory and make library files.
 3) Copy library files of CLAPACK (blas_LINUX.a, lapack_LINUX.a, and libf2c.a) to "lib" directory and copy header files (blaswrap.h, clapack.h, and f2c.h) to "include" directory.
@@ -37,6 +39,105 @@ The website of TRACMT: [https://sites.google.com/view/yoshiyausui/tracmt](https:
    export LD_LIBRARY_PATH="${LD_LIBRARY_PATH}:/usr/local/hdf5-1.10.5/lib"<br>
    export LIBRARY_PATH="${LIBRARY_PATH}:/usr/local/hdf5-1.10.5/lib"<br>
    export PATH="${PATH}:/usr/local/hdf5-1.10.5/lib"<br>
+
+### Build with g++ or clang++ (system LAPACK/BLAS + HDF5)
+`Makefile_C++11_MTH5_CI` supports building TRACMT with `g++` or `clang++` and
+system-provided LAPACK/BLAS and HDF5. No CLAPACK build is required.
+
+**Linux** (Ubuntu/Debian):
+```bash
+# Install dependencies
+sudo apt-get install g++ make liblapack-dev libblas-dev gfortran libhdf5-dev pkg-config
+
+# Build (from the src/ directory)
+cd src
+make -f Makefile_C++11_MTH5_CI
+
+# Optionally override the compiler
+CXX=clang++ make -f Makefile_C++11_MTH5_CI
+```
+
+**Windows** (MSYS2/MinGW-w64):
+```bash
+# Install dependencies in the MSYS2 MinGW64 shell
+pacman -S mingw-w64-x86_64-gcc mingw-w64-x86_64-make \
+          mingw-w64-x86_64-openblas mingw-w64-x86_64-hdf5 \
+          mingw-w64-x86_64-pkg-config
+
+# Build (from the src/ directory)
+cd src
+mingw32-make -f Makefile_C++11_MTH5_CI EXT=".exe" PLATFORM_DEF="-D_WINDOWS" BLAS_LAPACK_LIBS="-lopenblas"
+```
+
+### CI builds
+[![Build TRACMT](https://github.com/kujaku11/TRACMT/actions/workflows/build.yml/badge.svg)](https://github.com/kujaku11/TRACMT/actions/workflows/build.yml)
+
+Pre-compiled binaries for Linux (x86\_64) and Windows (x86\_64) are produced
+automatically on every push and pull request via GitHub Actions.
+Download them from the **Actions** tab → select a workflow run → **Artifacts**.
+
+## How to run TRACMT
+
+Run the executable in the directory containing your input files.
+
+```bash
+TRACMT [options]
+```
+
+### Required inputs
+- `param.dat` (control file)
+- Time-series data files referenced by `param.dat`
+
+### Typical outputs
+- `TRACMT.log`
+- `TRACMT.cvg`
+- `response_functions.csv`
+- `apparent_resistivity_and_phase.csv` (when `OUTPUT_RHOA_PHS` is set)
+
+### Common `param.dat` keywords
+- `NUM_OUT`, `SAMPLING_FREQ`, `NUM_THREADS`, `AZIMUTH`, `ROTATION`
+- `PROCEDURE`, `RRMS`, `MESTIMATORS`, `ERROR_ESTIMATION`
+- `NUM_SECTION`, `SEGMENT`, `DATA_FILES`, `END`
+
+### Command-line options
+- `-cout`: output log information to console
+- `-h`, `--help`: show help and exit
+
+### Minimal `param.dat` starter template
+Use this as a starting point and adjust values to your dataset. Lines starting with `#` are comments.
+
+```text
+# ---- Basic settings ----
+NUM_OUT
+2
+SAMPLING_FREQ
+32
+NUM_THREADS
+4
+AZIMUTH
+0.0 90.0
+0.0 90.0
+0.0 90.0
+
+# 0: Ordinary robust remote reference, 1: RRMS
+PROCEDURE
+0
+
+# ---- Time-series sections/files ----
+NUM_SECTION
+1
+SEGMENT
+1
+1024 3 2 3 4
+
+# File names and read ranges must match your dataset layout
+DATA_FILES
+# (Fill according to the manual format)
+
+END
+```
+
+For full keyword definitions and advanced options (for example `RRMS`, `MESTIMATORS`, `OUTPUT_RHOA_PHS`, `MTH5`), see [docs/Manual_Of_TRACMT.pdf](docs/Manual_Of_TRACMT.pdf).
 
 ## Release note
 _**v1.2.0**_ June. 13, 2024: Initial release.

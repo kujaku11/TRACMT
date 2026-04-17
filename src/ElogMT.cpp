@@ -32,6 +32,7 @@
 #include "CommonParameters.h"
 #include "Control.h"
 
+#include <cstdint>
 #include <iomanip>
 #include <iostream>
 #include <assert.h>

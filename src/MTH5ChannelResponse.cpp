@@ -35,6 +35,7 @@
 #include "MTH5FrequencyResponseTableFilter.h"
 #include "MTH5FIRFilter.h"
 
+#include <cstddef>
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
