@@ -76,6 +76,69 @@ Pre-compiled binaries for Linux (x86\_64) and Windows (x86\_64) are produced
 automatically on every push and pull request via GitHub Actions.
 Download them from the **Actions** tab → select a workflow run → **Artifacts**.
 
+## How to run TRACMT
+
+Run the executable in the directory containing your input files.
+
+```bash
+TRACMT [options]
+```
+
+### Required inputs
+- `param.dat` (control file)
+- Time-series data files referenced by `param.dat`
+
+### Typical outputs
+- `TRACMT.log`
+- `TRACMT.cvg`
+- `response_functions.csv`
+- `apparent_resistivity_and_phase.csv` (when `OUTPUT_RHOA_PHS` is set)
+
+### Common `param.dat` keywords
+- `NUM_OUT`, `SAMPLING_FREQ`, `NUM_THREADS`, `AZIMUTH`, `ROTATION`
+- `PROCEDURE`, `RRMS`, `MESTIMATORS`, `ERROR_ESTIMATION`
+- `NUM_SECTION`, `SEGMENT`, `DATA_FILES`, `END`
+
+### Command-line options
+- `-cout`: output log information to console
+- `-h`, `--help`: show help and exit
+
+### Minimal `param.dat` starter template
+Use this as a starting point and adjust values to your dataset. Lines starting with `#` are comments.
+
+```text
+# ---- Basic settings ----
+NUM_OUT
+2
+SAMPLING_FREQ
+32
+NUM_THREADS
+4
+AZIMUTH
+0.0 90.0
+0.0 90.0
+0.0 90.0
+
+# 0: Ordinary robust remote reference, 1: RRMS
+PROCEDURE
+0
+
+# ---- Time-series sections/files ----
+NUM_SECTION
+1
+SEGMENT
+1
+1024 3 2 3 4
+
+# File names and read ranges must match your dataset layout
+DATA_FILES
+# (Fill according to the manual format)
+
+END
+```
+
+For full keyword definitions and advanced options (for example `RRMS`, `MESTIMATORS`, `OUTPUT_RHOA_PHS`, `MTH5`), see [docs/Manual_Of_TRACMT.pdf](docs/Manual_Of_TRACMT.pdf).
+
 ## Release note
 _**v1.2.0**_ June. 13, 2024: Initial release.
 

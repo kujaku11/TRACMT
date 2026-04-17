@@ -34,6 +34,30 @@ int main( int argc, char* argv[] ){
 
 	bool outputToConsole(false);
 	for (int i = 1; i < argc; ++i) {
+		if (strcmp(argv[i], "-h") == 0 || strcmp(argv[i], "--help") == 0) {
+			printf("TRACMT usage:\n");
+			printf("  TRACMT [options]\n\n");
+			printf("How to run:\n");
+			printf("  1) Run TRACMT in the directory containing your input files.\n");
+			printf("  2) Ensure a control file named param.dat exists in that directory.\n");
+			printf("  3) Ensure param.dat lists the time-series files to process.\n\n");
+			printf("Required input files:\n");
+			printf("  - param.dat\n");
+			printf("  - Time-series data files referenced by param.dat\n\n");
+			printf("Typical output files:\n");
+			printf("  - TRACMT.log\n");
+			printf("  - TRACMT.cvg\n");
+			printf("  - response_functions.csv\n");
+			printf("  - apparent_resistivity_and_phase.csv (if OUTPUT_RHOA_PHS is set)\n\n");
+			printf("Useful param.dat keywords:\n");
+			printf("  NUM_OUT, SAMPLING_FREQ, NUM_THREADS, AZIMUTH, ROTATION\n");
+			printf("  PROCEDURE, RRMS, MESTIMATORS, ERROR_ESTIMATION\n");
+			printf("  NUM_SECTION, SEGMENT, DATA_FILES, END\n\n");
+			printf("Options:\n");
+			printf("  -cout             Output log information to console\n");
+			printf("  -h, --help        Show this help message and exit\n");
+			return 0;
+		}
 		if (strcmp(argv[i], "-cout") == 0) {
 			outputToConsole = true;
 		}
